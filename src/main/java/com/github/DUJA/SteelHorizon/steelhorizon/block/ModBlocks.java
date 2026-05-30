@@ -36,7 +36,7 @@ public class ModBlocks {
      }
 
      private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block){
-         ModItems.ITEMS.registerItem(name, properties -> new BlockItem(block.get(), new Item.Properties()
+         ModItems.ITEMS.registerItem(name, _ -> new BlockItem(block.get(), new Item.Properties()
                  .useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Steelhorizon.MODID,name)))));
 
      }

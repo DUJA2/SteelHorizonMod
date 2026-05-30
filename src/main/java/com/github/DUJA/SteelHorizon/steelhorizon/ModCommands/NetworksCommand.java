@@ -2,16 +2,15 @@ package com.github.DUJA.SteelHorizon.steelhorizon.ModCommands;
 
 import com.github.DUJA.SteelHorizon.steelhorizon.ConveyorNetwork.ConveyorNetwork;
 import com.github.DUJA.SteelHorizon.steelhorizon.ConveyorNetwork.ConveyorNetworkManager;
-import com.google.common.graph.Network;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +35,9 @@ public class NetworksCommand {
         ServerLevel level = command.getSource().getLevel();
         if(command.getSource().getEntity() instanceof Player player) {
             if (!level.isClientSide()) {
-                ArrayList<List> pos = new ArrayList<>();
+                ArrayList<List<BlockPos>> pos = new ArrayList<>();
                 for(ConveyorNetwork network : ConveyorNetworkManager.get(level).getNetworks()) {
-                    List list = network.getMemberList();
+                    List<BlockPos> list = network.getMemberList();
                     pos.add(list);
                 }
                 player.sendSystemMessage(Component.literal(Arrays.toString(pos.toArray())));}

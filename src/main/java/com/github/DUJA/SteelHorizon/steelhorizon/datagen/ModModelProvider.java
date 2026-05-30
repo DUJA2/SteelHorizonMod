@@ -9,8 +9,7 @@ import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.Identifier;
-import net.neoforged.fml.common.Mod;
+
 
 public class ModModelProvider extends ModelProvider {
 

@@ -5,10 +5,8 @@ import java.util.*;
 import com.github.DUJA.SteelHorizon.steelhorizon.Steelhorizon;
 import com.github.DUJA.SteelHorizon.steelhorizon.block.AbstractConveyorBlock;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
@@ -94,14 +92,13 @@ public class ConveyorNetworkManager extends SavedData {
             BlockPos neighborPos = target.relative(dir);
            // Steelhorizon.LOGGER.info(neighborPos.toShortString());
             BlockState state = level.getBlockState(neighborPos);
-            if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+            if (state.getBlock() instanceof AbstractConveyorBlock) {
 
                 Direction facing = state.getValue(AbstractConveyorBlock.FACING);
                 if (facing == dir.getOpposite() && !neighborPos.equals(facingPos)) {
                     adjacentBlocks.add(neighborPos);
                 }
-                //Steelhorizon.LOGGER.info("neighbor {} facing {}", neighborPos.toShortString(), facing);
-                //Steelhorizon.LOGGER.info(dir.toString());
+
 
             }
         }
@@ -136,7 +133,7 @@ public class ConveyorNetworkManager extends SavedData {
         for (Direction dir : Direction.values()) {
             BlockPos neighborPos = brokenBlock.relative(dir);
             BlockState state = level.getBlockState(neighborPos);
-            if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+            if (state.getBlock() instanceof AbstractConveyorBlock) {
                 boolean flag = false;
                 for(ConveyorNetwork network : splitNets){
                     if(network.contains(neighborPos)){
@@ -164,7 +161,7 @@ public class ConveyorNetworkManager extends SavedData {
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = pos.relative(dir);
                 BlockState state = level.getBlockState(neighborPos);
-                if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+                if (state.getBlock() instanceof AbstractConveyorBlock) {
 
                     Direction facing = state.getValue(AbstractConveyorBlock.FACING);
                     if ((facing == dir.getOpposite() || neighborPos.equals(pos.relative(level.getBlockState(pos).getValue(AbstractConveyorBlock.FACING))))
