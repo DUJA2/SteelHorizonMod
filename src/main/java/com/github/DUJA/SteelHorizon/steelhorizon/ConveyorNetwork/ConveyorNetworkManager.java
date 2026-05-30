@@ -1,50 +1,186 @@
 package com.github.DUJA.SteelHorizon.steelhorizon.ConveyorNetwork;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
+import com.github.DUJA.SteelHorizon.steelhorizon.Steelhorizon;
+import com.github.DUJA.SteelHorizon.steelhorizon.block.AbstractConveyorBlock;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 
-public class ConveyorNetworkManager {
-    private static final Map<Level,ConveyorNetworkManager> INSTANCES = new WeakHashMap<>();
-    private final List<ConveyorNetwork> networks = new ArrayList<>();
+public class ConveyorNetworkManager extends SavedData {
+    private int placed = 0;
+    public static final SavedDataType<ConveyorNetworkManager> ID =
+            new SavedDataType<>(
+                    Identifier.fromNamespaceAndPath(Steelhorizon.MODID, "conveyor_network_manager"),
+                    ConveyorNetworkManager::new,
+                    RecordCodecBuilder.create(instance -> instance.group(
+                            ConveyorNetwork.CODEC.listOf()
+                                    .fieldOf("networks")
+                                    .forGetter(ConveyorNetworkManager::getNetworks)
+                    ).apply(instance, ConveyorNetworkManager::new))
+            );
 
-    public static ConveyorNetworkManager get(Level level){
-        return INSTANCES.computeIfAbsent(level, k -> new ConveyorNetworkManager());
+
+    public ConveyorNetworkManager() {
+        Steelhorizon.LOGGER.info("Created empty manager");
+        this.networks = new ArrayList<>();
     }
 
-    public void onBlockPlaced(Level level, BlockPos pos, BlockPos facing){
-        ConveyorNetwork neighborNet = null;
+    public ConveyorNetworkManager(List<ConveyorNetwork> members) {
+        Steelhorizon.LOGGER.info(
+                "Loaded manager with {} networks",
+                members.size()
+        );
+        this.networks = new ArrayList<>(members);
+    }
 
+    public List<ConveyorNetwork> getNetworks(){
+        return networks;
+    }
+
+
+    private final List<ConveyorNetwork> networks;
+
+    public static ConveyorNetworkManager get(ServerLevel serverLevel){
+            return serverLevel.getDataStorage().computeIfAbsent(ID);
+
+    }
+
+
+
+    public int getNumNetworks(){
+        return networks.size();
+    }
+    public void onBlockPlaced(ServerLevel level, BlockPos pos, BlockPos facing){
+        placed++;
+        Set<ConveyorNetwork> network = adjacentNetworks(pos,facing,level);
+        Steelhorizon.LOGGER.info("Unifying a network of size {}", network.size());
+        networks.add(unify(network,pos));
+        for(ConveyorNetwork net : network){
+            Steelhorizon.LOGGER.info("Adjacent network {}", net.getMemberSet());
+            networks.remove(net);
+        }
+
+
+        Steelhorizon.LOGGER.info(placed +" Conveyors");
+        setDirty();
+    }
+    public void onBlockRemoved(ServerLevel level, BlockPos pos){
         for(ConveyorNetwork net : networks){
-            if (net.contains(facing) || net.isNeighboring(pos)) {
-                neighborNet = net;
-                break;
+            if(net.getMemberSet().contains(pos)){
+            networks.remove(net);
+            break;
             }
         }
-        if(neighborNet != null){
-            neighborNet.addBlock(pos);
-        } else{
-            ConveyorNetwork newNet = new ConveyorNetwork();
-            newNet.addBlock(pos);
-            networks.add(newNet);
-        }
+        networks.addAll(split(pos, level));
+        setDirty();
     }
-    public void onBlockRemoved(Level level, BlockPos pos){
-        ConveyorNetwork targetNet = null;
-        for(ConveyorNetwork net : networks){
-            if(net.contains(pos)){
-                targetNet = net;
-                break;
+
+
+    private Set<ConveyorNetwork> adjacentNetworks(BlockPos target, BlockPos facingPos, ServerLevel level){
+        Set<ConveyorNetwork> adjacentNets = new HashSet<>();
+        List<BlockPos> adjacentBlocks = new ArrayList<>();
+        adjacentBlocks.add(facingPos);
+        for (Direction dir : Direction.values()) {
+            BlockPos neighborPos = target.relative(dir);
+           // Steelhorizon.LOGGER.info(neighborPos.toShortString());
+            BlockState state = level.getBlockState(neighborPos);
+            if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+
+                Direction facing = state.getValue(AbstractConveyorBlock.FACING);
+                if (facing == dir.getOpposite() && !neighborPos.equals(facingPos)) {
+                    adjacentBlocks.add(neighborPos);
+                }
+                //Steelhorizon.LOGGER.info("neighbor {} facing {}", neighborPos.toShortString(), facing);
+                //Steelhorizon.LOGGER.info(dir.toString());
+
             }
         }
-        if(targetNet != null){
-            networks.remove(targetNet);
-            //add later dumbass
+        Steelhorizon.LOGGER.info("{} test {}", adjacentBlocks,  adjacentBlocks.size());
+        for(ConveyorNetwork net : networks){
+            for(BlockPos adjacentPos : adjacentBlocks){
+                Steelhorizon.LOGGER.info("Net {} pos {}", net.getMemberSet(), adjacentPos);
+                if(net.getMemberSet().contains(adjacentPos)){
+                    adjacentNets.add(net);
+                    break;
+                }
+            }
         }
+
+        Steelhorizon.LOGGER.info("size {} BlockPos {}", adjacentNets.size(),  adjacentBlocks);
+        return adjacentNets;
     }
+    public ConveyorNetwork unify(Set<ConveyorNetwork> adjacentNets, BlockPos targetPos){
+        List<BlockPos> adjacentBlocks = new ArrayList<>();
+        adjacentBlocks.add(targetPos);
+
+        for(ConveyorNetwork net : adjacentNets){
+            Steelhorizon.LOGGER.info("");
+            adjacentBlocks.addAll(net.getMemberSet());
+        }
+        return new ConveyorNetwork(adjacentBlocks);
+    }
+
+
+    private Set<ConveyorNetwork> split(BlockPos brokenBlock,ServerLevel level){
+        Set<ConveyorNetwork> splitNets = new HashSet<>();
+        for (Direction dir : Direction.values()) {
+            BlockPos neighborPos = brokenBlock.relative(dir);
+            BlockState state = level.getBlockState(neighborPos);
+            if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+                boolean flag = false;
+                for(ConveyorNetwork network : splitNets){
+                    if(network.contains(neighborPos)){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    splitNets.add(search(neighborPos, level));}
+                }
+
+        }
+
+
+
+        return  splitNets;
+    }
+    private ConveyorNetwork search(BlockPos startPos, ServerLevel level){
+        ConveyorNetwork searchNet = new ConveyorNetwork(List.of());
+        Stack<BlockPos> stack = new Stack<>();
+        stack.push(startPos);
+        searchNet.addBlock(startPos);
+        while(!stack.isEmpty()){
+            BlockPos pos=stack.pop();
+            for (Direction dir : Direction.values()) {
+                BlockPos neighborPos = pos.relative(dir);
+                BlockState state = level.getBlockState(neighborPos);
+                if (state.getBlock() instanceof AbstractConveyorBlock conveyor) {
+
+                    Direction facing = state.getValue(AbstractConveyorBlock.FACING);
+                    if ((facing == dir.getOpposite() || neighborPos.equals(pos.relative(level.getBlockState(pos).getValue(AbstractConveyorBlock.FACING))))
+                    && !searchNet.getMemberSet().contains(neighborPos)) {
+                        stack.push(neighborPos);
+                        searchNet.addBlock(neighborPos);
+                    }
+
+
+                }
+            }
+        }
+
+        return searchNet;
+    }
+
+
+
 }

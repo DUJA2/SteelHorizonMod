@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "steelhorizon:block/basic_conveyor_front",
+    "side": "steelhorizon:block/basic_conveyor_side",
+    "top": "steelhorizon:block/basic_conveyor_top"
+  }
+}

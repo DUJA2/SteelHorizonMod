@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "steelhorizon:item/basic_conveyor"
+  }
+}

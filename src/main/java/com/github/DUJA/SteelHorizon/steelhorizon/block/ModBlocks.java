@@ -22,7 +22,12 @@ public class ModBlocks {
 
      public static final DeferredBlock<Block> steel_block = registerBlock("steel_block",
              properties -> new Block(properties.strength(5f)
-                     .requiresCorrectToolForDrops().sound(SoundType.IRON).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Steelhorizon.MODID,"steel_block")))));
+                     .requiresCorrectToolForDrops().sound(SoundType.IRON)
+                     .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Steelhorizon.MODID,"steel_block")))));
+
+     public static final DeferredBlock<Block> basic_conveyor = registerBlock("basic_conveyor", properties ->
+             new TieredConveyorBlock(ConveyorTier.BASIC.tierNumber,ConveyorTier.BASIC.speed,properties.strength(5f).requiresCorrectToolForDrops()
+                     .setId(ResourceKey.create(Registries.BLOCK,Identifier.fromNamespaceAndPath(Steelhorizon.MODID,"basic_conveyor")))));
 
      private static <T extends Block> DeferredBlock<T> registerBlock(String name, Function<BlockBehaviour.Properties,T> function){
          DeferredBlock<T> toReturn = BLOCKS.registerBlock(name, function);
@@ -32,7 +37,7 @@ public class ModBlocks {
 
      private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block){
          ModItems.ITEMS.registerItem(name, properties -> new BlockItem(block.get(), new Item.Properties()
-                 .useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Steelhorizon.MODID,"steel_block")))));
+                 .useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Steelhorizon.MODID,name)))));
 
      }
 

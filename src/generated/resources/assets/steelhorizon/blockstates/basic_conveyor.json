@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "steelhorizon:block/basic_conveyor",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "steelhorizon:block/basic_conveyor"
+    },
+    "facing=south": {
+      "model": "steelhorizon:block/basic_conveyor",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "steelhorizon:block/basic_conveyor",
+      "y": 270
+    }
+  }
+}

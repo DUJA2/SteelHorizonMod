@@ -1,33 +1,46 @@
 package com.github.DUJA.SteelHorizon.steelhorizon.ConveyorNetwork;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.Item;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ConveyorNetwork {
-    private final Set<BlockPos> member = new HashSet<>();
+
+    public ConveyorNetwork(List<BlockPos> members) {
+        this.member = new HashSet<>(members);
+    }
+
+
+    public static final Codec<ConveyorNetwork> CODEC =
+            RecordCodecBuilder.create(instance -> instance.group(
+                    BlockPos.CODEC.listOf()
+                            .fieldOf("members")
+                            .forGetter(ConveyorNetwork::getMemberList)
+            ).apply(instance, ConveyorNetwork::new));
+
+
+    private final Set<BlockPos> member;
     public void addBlock(BlockPos pos){
         member.add(pos);
     }
     public boolean contains(BlockPos pos){
         return member.contains(pos);
     }
-    public boolean isNeighboring(BlockPos pos){
-        for(BlockPos member: member){
-            if(member.closerThan(pos, 1.99)){
-                return true;
-            }
-        }
-        return false;
-    }
+
     public int getMemberCount(){
         return member.size();
     }
 
-    public Set<BlockPos> getMember() {
+    public List<BlockPos> getMemberList() {
+        return new ArrayList<>(member);
+    }
+
+    public Set<BlockPos> getMemberSet() {
         return member;
+    }
+    public void removeBlock(BlockPos pos){
+        member.remove(pos);
     }
 }

@@ -1,6 +1,10 @@
-// 26.1.2	2026-05-28T09:57:37.5193758	Model Definitions - steelhorizon
+// 26.1.2	2026-05-30T09:37:06.763449	Model Definitions - steelhorizon
+30bb603e6a0314e6d5d4667284d076c05f05094c assets/steelhorizon/blockstates/basic_conveyor.json
 7d7a0e5517d12972a4ff2958477bcd73d614295f assets/steelhorizon/blockstates/steel_block.json
+96008ccaafef5a1f8f90f00cbf7759d4150f0c90 assets/steelhorizon/items/basic_conveyor.json
 8bbd311a4383cf33d05f0a92e02f4ef044420c0c assets/steelhorizon/items/steel_block.json
 b8f3c2453fa832104d6f939a8825e63e6e35f446 assets/steelhorizon/items/steel_ingot.json
+79c13dc0f7637a3888595f1a21198d083c8f2a43 assets/steelhorizon/models/block/basic_conveyor.json
 9835aeac2c75a4a0dffce6f04330313441ca6da3 assets/steelhorizon/models/block/steel_block.json
+ff63dceafbad9e51758a4b8b30e961b516927dcb assets/steelhorizon/models/item/basic_conveyor.json
 5a3a98d9f618332e8ccfdebbf1b00b9f48a12bd4 assets/steelhorizon/models/item/steel_ingot.json

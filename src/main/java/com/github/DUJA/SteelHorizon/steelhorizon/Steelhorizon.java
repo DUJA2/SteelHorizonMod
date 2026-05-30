@@ -1,10 +1,13 @@
 package com.github.DUJA.SteelHorizon.steelhorizon;
 
 import com.github.DUJA.SteelHorizon.steelhorizon.Item.ModItems;
+import com.github.DUJA.SteelHorizon.steelhorizon.ModCommands.NetworksCommand;
 import com.github.DUJA.SteelHorizon.steelhorizon.block.ModBlocks;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 
+import net.minecraft.commands.CommandSourceStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -13,6 +16,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
@@ -22,7 +26,7 @@ public class Steelhorizon {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "steelhorizon";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -61,6 +65,13 @@ public class Steelhorizon {
         LOGGER.info("HELLO from server starting");
     }
 
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        LOGGER.info("HELLO FROM REGISTER COMMANDS");
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+
+        NetworksCommand.register(dispatcher);
+    }
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     public static class ClientModEvents {
         @SubscribeEvent
@@ -69,5 +80,6 @@ public class Steelhorizon {
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
+
     }
 }
